@@ -21,8 +21,8 @@ public class Count {
 		infos = readCSV.readFile("designStructure");
 		List<ArrayList<Restriction>> restrictions = Organizer.restrictionMapper(infos, factors);//it must make sure a higher level restriction has smaller level size
 		
-		int tlct = LevelChangeTime.tlct(factors, restrictions, replication);		
-		int tlcc = LevelChangeCost.tlcc(factors, restrictions, replication);
+		float tlct = LevelChangeTime.tlct(factors, restrictions, replication);		
+		float tlcc = LevelChangeCost.tlcc(factors, restrictions, replication);
 		
 		System.out.println(tlct);
 		System.out.println(tlcc);

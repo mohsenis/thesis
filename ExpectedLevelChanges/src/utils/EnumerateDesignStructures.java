@@ -285,7 +285,7 @@ public class EnumerateDesignStructures {
 		List<String[]> infos = readCSV.readFile("factors");
 		List<Factor> factors = Organizer.factorMapper(infos, replication); 
 		
-		List<int[]> lct_lcc_list = new ArrayList<int[]>();
+		List<float[]> lct_lcc_list = new ArrayList<float[]>();
 		List<ArrayList<Restriction>> structures = listDesignStructures(factors);
 		ArrayList<ArrayList<ArrayList<Effect>>> allEffects = new ArrayList<ArrayList<ArrayList<Effect>>>();
 		ArrayList<ArrayList<Effect>> effects;
@@ -319,7 +319,7 @@ public class EnumerateDesignStructures {
 			//changing the format end
 			//System.out.println(restrictions);
 			//System.out.println(rs);
-			int[] lct_lcc = new int[2];
+			float[] lct_lcc = new float[2];
 			lct_lcc[0] = LevelChangeTime.tlct(factors, restrictions, replication);		
 			lct_lcc[1] = LevelChangeCost.tlcc(factors, restrictions, replication);
 			
@@ -329,12 +329,12 @@ public class EnumerateDesignStructures {
 			allEffects.add(effects);
 		}
 		double value;
-		PrintWriter writer = new PrintWriter("C:/Users/Administrator/Thesis/ExpectedLevelChanges/src/files/values.txt", "UTF-8");
+		PrintWriter writer = new PrintWriter("ExpectedLevelChanges/src/files/values.txt", "UTF-8");
 		writer.println("value,time,cost");
 		for(int i=0; i<structures.size();i++) {
 			value = 0;
 		    ArrayList<Restriction> rs = structures.get(i);
-		    int[] lct_lcc = lct_lcc_list.get(i);
+		    float[] lct_lcc = lct_lcc_list.get(i);
 		    
 		    //System.out.println("Structure:");
 		    for(Restriction r: rs){

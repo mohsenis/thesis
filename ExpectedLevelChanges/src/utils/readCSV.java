@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class readCSV {
-	private static String source = "C:/Users/Administrator/Thesis/ExpectedLevelChanges/src/files/";
+	private static String source = "ExpectedLevelChanges/src/files/";
 	
 	public static List<String[]> readFile(String fileName){
 		String path = source+fileName+".csv";
