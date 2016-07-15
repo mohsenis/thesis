@@ -29,8 +29,21 @@ public class EnumerateDesignStructures {
 		
 		List<ArrayList<Restriction>> structures = removeDuplicates();
 		
-		//showDesigns(removedDesigns);
-		//System.out.println(structures.size());
+		//structures = removeReplicateRestrictions(structures);
+		ArrayList<Integer> removeRests = new ArrayList<Integer>();
+		for(int i=0; i<structures.size();i++){
+			for(Restriction r: structures.get(i)){
+				if(r.getFactorName().equals("R") && r.getSize()!=1){
+					removeRests.add(i);
+					break;
+				}
+			}
+		}
+		int index;
+		for(int i=removeRests.size()-1;i>-1;i--){
+			index = removeRests.get(i);
+			structures.remove(index);
+		}
 		
 		return structures;
 	}
@@ -85,7 +98,14 @@ public class EnumerateDesignStructures {
 		String str3;
 		for(Factor f: factors){
 			str1 = str;
-			ArrayList<Integer> divisors = allDivisors(f.getLevels());
+			ArrayList<Integer> divisors;
+//			if(f.getName().equals("R")){
+//				divisors = new ArrayList<Integer>();
+//				divisors.add(1);
+//			}else{
+				divisors = allDivisors(f.getLevels());
+//			}
+			
 			for(Integer i: divisors){
 				str2 = str1;
 				for(int o=f.getMinOrder();o<=f.getMaxOrder();o++){
@@ -97,7 +117,7 @@ public class EnumerateDesignStructures {
 					List<Factor> newFactors = new ArrayList<Factor>();
 					for(Factor ff:factors){
 						Factor factor = new Factor(ff);
-						if(ff==f){
+						if(ff.equals(f)){
 							factor.setLevels(i);
 							factor.setMinOrder(o+1);
 							factor.setMaxOrder(o+1);
@@ -280,7 +300,7 @@ public class EnumerateDesignStructures {
 	}
 	
 	public static void main(String[] args) throws FileNotFoundException, UnsupportedEncodingException{
-		int replication = 2;
+		int replication = 1; //always
 		
 		List<String[]> infos = readCSV.readFile("factors");
 		List<Factor> factors = Organizer.factorMapper(infos, replication); 
