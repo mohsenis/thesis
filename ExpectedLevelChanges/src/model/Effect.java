@@ -1,17 +1,25 @@
 package model;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class Effect {
 	private ArrayList<Factor> factors = new ArrayList<Factor>();
 	private ArrayList<Integer> bases = new ArrayList<Integer>();
+	private ArrayList<Effect> nestedWithin = new ArrayList<Effect>();
 	
 	private boolean restricted = false;
 	
 	public String getName(){
-		String name="";
+		
+		ArrayList<String> names = new ArrayList<String>();
 		for(Factor f: this.factors){
-			name+=f.getName();
+			names.add(f.getName());
+		}
+		Collections.sort(names);
+		String name="";
+		for(String str: names){
+			name+=str;
 		}
 		return name;
 	}
@@ -63,5 +71,44 @@ public class Effect {
 	
 	public ArrayList<Integer> getBases(){
 		return this.bases;
+	}
+	
+	public void addNestedWithin(Effect e){
+		/*if(!this.nestedWithin.contains(e)){
+			this.nestedWithin.add(e);
+		}*/
+		boolean b = true;
+		for(Effect ee: this.nestedWithin){
+			if(ee.getName().equals(e.getName())){
+				b = false;
+				break;
+			}
+		}
+		if(b){
+			this.nestedWithin.add(e);
+		}
+	}
+	
+	public void addAllNestedWithin(ArrayList<Effect> es){
+		boolean b;
+		for(Effect e: es){
+			b = true;
+			/*if(!this.nestedWithin.contains(e)){
+				this.nestedWithin.add(e);
+			}*/
+			for(Effect ee: this.nestedWithin){
+				if(ee.getName().equals(e.getName())){
+					b = false;
+					break;
+				}
+			}
+			if(b){
+				this.nestedWithin.add(e);
+			}
+		}
+	}
+	
+	public ArrayList<Effect> getNestedWithin(){
+		return this.nestedWithin;
 	}
 }

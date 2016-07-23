@@ -5,6 +5,7 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -150,8 +151,12 @@ public class EnumerateDesignStructures {
 	
 	public static ArrayList<ArrayList<Effect>> getEffects(List<Factor> factors, ArrayList<ArrayList<Restriction>> restrictions){
 		ArrayList<Effect> effects; //for each level of interaction
+		ArrayList<Effect> nestedEffects;
 		ArrayList<ArrayList<Effect>> effectsList = new ArrayList<ArrayList<Effect>>();
 		HashMap<String,Effect> effectMap = new HashMap<String, Effect>();
+		
+		ArrayList<Effect> allEffects = new ArrayList<Effect>();
+		ArrayList<String> names = new ArrayList<String>();
 		
 		for(int i=0; i<factors.size(); i++){
 			effects = new ArrayList<Effect>();
@@ -194,29 +199,92 @@ public class EnumerateDesignStructures {
 				newFactors.add(newF);
 			}
 			
+			if(newFactors.size()>1){ //add nesting
+				for(int i=1; i<newFactors.size(); i++){
+					newFactors.get(i).addNestedWithin(newFactors.get(i-1));
+					newFactors.get(i).addAllNestedWithin(newFactors.get(i-1).getNestedWithin());
+				}
+			}
+			
+			nestedEffects = new ArrayList<Effect>();
+			
 			for(Factor ff: newFactors){
 				e = new Effect();
 				e.addBase(index);
 				e.addFactor(ff);
+				e.addAllNestedWithin(nestedEffects);
+				nestedEffects.add(e);
 				effectsList.get(0).add(e);
 				
+				allEffects.add(e);
+				names.add(e.getName());
 				effectMap.put(e.getName(), e);
 			}
 		}
 		
 		ArrayList<Effect> effs;
+		int ind;
 		for(int i=0; i<effectsList.size()-1;i++){
 			effs= effectsList.get(i);
 			for(Effect eff: effectsList.get(0)){
 				for(Effect ef: effs){
-					if(eff.getBases().get(0) < ef.getBases().get(0)){
+					//if(eff.getBases().get(0) != ef.getBases().get(0)){
+					if(!ef.getBases().contains(eff.getBases().get(0))){
 						e = new Effect();
 						e.addBase(eff.getBases().get(0));
 						e.addAllBases(ef.getBases());
 						e.addFactor(eff.getFactors().get(0));
 						e.addAllFactors(ef.getFactors());
 						
-						effectsList.get(i+1).add(e);
+						ind = names.indexOf(e.getName());
+						if(ind!=-1){
+							e = allEffects.get(ind);
+						}else{
+							allEffects.add(e);
+							names.add(e.getName());
+							effectsList.get(i+1).add(e);
+						}
+						
+						e.addNestedWithin(eff);
+						e.addAllNestedWithin(eff.getNestedWithin());
+						e.addNestedWithin(ef);
+						e.addAllNestedWithin(ef.getNestedWithin());
+//						for(Factor f: e.getFactors()){ //add nesting for interactions
+//							e.addNestedWithin(f);
+//							for(Factor FF)
+//						}
+						
+					}
+				}
+			}
+		}
+		
+		List<Factor> fs;
+		ArrayList<String> eNames;
+		String name;
+		for(Effect es: allEffects){
+			for(Factor f: es.getFactors()){
+				for(Factor wf: f.getNestedWithin()){
+					fs = new ArrayList<Factor>();
+					fs.addAll(es.getFactors());
+					fs.remove(f);
+					fs.add(wf);
+					
+					eNames = new ArrayList<String>();
+					for(Factor nf: fs){
+						eNames.add(nf.getName());
+					}
+					Collections.sort(eNames);
+					name = "";
+					for(String str: eNames){
+						name+=str;
+					}
+					
+					ind = names.indexOf(name);
+					if(ind!=-1){
+						e = allEffects.get(ind);
+						es.addNestedWithin(e);
+						es.addAllNestedWithin(e.getNestedWithin());
 					}
 				}
 			}
@@ -367,6 +435,16 @@ public class EnumerateDesignStructures {
 		    			System.out.print("-r");
 		    			value -= e.getValue();
 		    		}
+		    		
+		    		if(e.getNestedWithin().size()!=0){
+		    			System.out.print("[");
+		    			for(Effect we: e.getNestedWithin()){
+		    				System.out.print(we.getName());
+		    				System.out.print("-");
+		    			}
+		    			System.out.print("]");
+		    		}
+		    		
 		    		System.out.print(", ");
 		    	}
 		    }

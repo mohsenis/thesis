@@ -1,5 +1,6 @@
 package model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Factor implements Cloneable{
@@ -12,7 +13,7 @@ public class Factor implements Cloneable{
 	private int maxOrder;
 	private int value;
 	
-	private Factor nestedWithin = null;
+	private ArrayList<Factor> nestedWithin = new ArrayList<Factor>();
 	private int base;
 	
 	public Factor(String name, int levels, int lct, int lcc, int value){
@@ -34,6 +35,7 @@ public class Factor implements Cloneable{
 		this.maxOrder = f.getMaxOrder();
 		this.replication = f.getRep();
 		this.value = f.value;
+		nestedWithin.addAll(f.nestedWithin);
 	}
 	
 	public void setValue(int value){
@@ -52,11 +54,15 @@ public class Factor implements Cloneable{
 		return this.base;
 	}
 	
-	public void setNestedWithin(Factor f){
-		this.nestedWithin = f;
+	public void addNestedWithin(Factor f){
+		this.nestedWithin.add(f);
 	}
 	
-	public Factor getNestedFactor(){
+	public void addAllNestedWithin(ArrayList<Factor> fs){
+		this.nestedWithin.addAll(fs);
+	}
+	
+	public ArrayList<Factor> getNestedWithin(){
 		return this.nestedWithin;
 	}
 	
