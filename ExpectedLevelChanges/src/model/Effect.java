@@ -9,6 +9,7 @@ public class Effect {
 	private ArrayList<Effect> nestedWithin = new ArrayList<Effect>();
 	
 	private boolean restricted = false;
+	private int effectLevel = 1;
 	
 	public String getName(){
 		
@@ -23,6 +24,20 @@ public class Effect {
 		}
 		return name;
 	}
+	
+	public int getEffectLevel(){
+		return this.effectLevel;
+	}
+	
+	/*public void updateEffectLevel(){
+		if(this.nestedWithin.size()!=0){
+			for(Effect e: this.nestedWithin){
+				if(e.getEffectLevel()+1>this.effectLevel){
+					
+				}
+			}
+		}
+	}*/
 	
 	public double getValue(){
 		double value= 1;
@@ -86,6 +101,9 @@ public class Effect {
 		}
 		if(b){
 			this.nestedWithin.add(e);
+			if(e.getEffectLevel()+1>this.effectLevel){
+				this.effectLevel = e.getEffectLevel() + 1;
+			}
 		}
 	}
 	
@@ -104,6 +122,9 @@ public class Effect {
 			}
 			if(b){
 				this.nestedWithin.add(e);
+				if(e.getEffectLevel()+1>this.effectLevel){
+					this.effectLevel = e.getEffectLevel() + 1;
+				}
 			}
 		}
 	}

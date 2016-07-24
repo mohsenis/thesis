@@ -446,6 +446,8 @@ public class EnumerateDesignStructures {
 		    		}
 		    		
 		    		System.out.print(", ");
+
+	    			System.out.println("{"+e.getEffectLevel()+"}");
 		    	}
 		    }
 		    System.out.println();
