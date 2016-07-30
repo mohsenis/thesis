@@ -7,9 +7,48 @@ public class Effect {
 	private ArrayList<Factor> factors = new ArrayList<Factor>();
 	private ArrayList<Integer> bases = new ArrayList<Integer>();
 	private ArrayList<Effect> nestedWithin = new ArrayList<Effect>();
+	private ArrayList<String> mSquares = new ArrayList<String>();
+	private ArrayList<Integer> mSquaresCoefs = new ArrayList<Integer>();
 	
 	private boolean restricted = false;
-	private int effectLevel = 1;
+	private int position = 1;
+	private int level;
+	private int df;
+	private int coef;
+	private String mSquare;
+	
+	public void setLevel(int l){
+		this.level = l;
+	}
+	
+	public int getLevel(){
+		return this.level;
+	}
+	
+	public void setDf(int df){
+		this.df = df;
+	}
+	
+	public void updateDf(){
+		int c = 1;
+		for(Effect e: this.nestedWithin){
+			c *= e.getFactors().get(0).getLevels();
+		}
+		this.df *= c;
+		this.level *= c;
+	}
+	
+	public int getCoef(){
+		return this.coef;
+	}
+	
+	public void setCoef(int N){
+		this.coef = N/this.level;
+	}
+	
+	public int getDf(){
+		return this.df;
+	}
 	
 	public String getName(){
 		
@@ -25,8 +64,8 @@ public class Effect {
 		return name;
 	}
 	
-	public int getEffectLevel(){
-		return this.effectLevel;
+	public int getPosition(){
+		return this.position;
 	}
 	
 	/*public void updateEffectLevel(){
@@ -101,8 +140,8 @@ public class Effect {
 		}
 		if(b){
 			this.nestedWithin.add(e);
-			if(e.getEffectLevel()+1>this.effectLevel){
-				this.effectLevel = e.getEffectLevel() + 1;
+			if(e.getPosition()+1>this.position){
+				this.position = e.getPosition() + 1;
 			}
 		}
 	}
@@ -122,8 +161,8 @@ public class Effect {
 			}
 			if(b){
 				this.nestedWithin.add(e);
-				if(e.getEffectLevel()+1>this.effectLevel){
-					this.effectLevel = e.getEffectLevel() + 1;
+				if(e.getPosition()+1>this.position){
+					this.position = e.getPosition() + 1;
 				}
 			}
 		}
@@ -131,5 +170,76 @@ public class Effect {
 	
 	public ArrayList<Effect> getNestedWithin(){
 		return this.nestedWithin;
+	}
+	
+	public int getType(){
+		for(Factor f: this.factors){
+			if(f.getType()==1){
+				return 1;
+			}
+		}
+		return 0;
+	}
+	
+	public String getMSquare(){
+		String mSquare;
+		if(this.getType()==0){
+			mSquare = "\u03A6"+"("+this.getName()+")";
+		}else{
+			mSquare = "\u03C3"+"²"+"("+this.getName()+")";
+		}
+		//this.mSquare = mSquare;
+		return mSquare;
+	}
+	
+	public ArrayList<String> getMSquares(){
+		return this.mSquares;
+	}
+	
+	public ArrayList<Integer> getMSquareCoefs(){
+		return this.mSquaresCoefs;
+	}
+	
+	public void setMSquare(){
+		this.mSquare = this.getMSquare();
+		
+		this.mSquares.add("\u03C3"+"²");
+		this.mSquaresCoefs.add(1);
+		this.mSquares.add(this.mSquare);
+		this.mSquaresCoefs.add(this.coef);
+	}
+	
+	public void updateMSquares(){
+		if(this.getType()==1){
+			for(Effect e: this.nestedWithin){
+				if(this.getType(e)==1){
+					e.getMSquares().add(this.mSquare);
+					e.getMSquareCoefs().add(this.coef);
+				}
+			}
+		}
+	}
+	
+	public void addRestrictedMSquare(){
+		String mSquare = "\u03C3"+"²"+"r"+"("+this.getName()+")";
+		this.mSquares.add(mSquare);
+		this.mSquaresCoefs.add(this.coef);
+		
+		for(Effect e: this.nestedWithin){
+			e.getMSquares().add(mSquare);
+			e.getMSquareCoefs().add(this.coef);
+		}
+	}
+	
+	public int getType(Effect e){
+		for(Factor f: this.factors){
+			if(!e.getFactors().contains(f)){
+				if(f.getType()==0){
+					return 0;
+				}
+			}
+			
+		}
+		return 1;
 	}
 }

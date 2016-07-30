@@ -158,9 +158,11 @@ public class EnumerateDesignStructures {
 		ArrayList<Effect> allEffects = new ArrayList<Effect>();
 		ArrayList<String> names = new ArrayList<String>();
 		
+		int N = 1;
 		for(int i=0; i<factors.size(); i++){
 			effects = new ArrayList<Effect>();
 			effectsList.add(effects);
+			N *= factors.get(i).getLevels();
 		}
 		
 		int index;
@@ -176,7 +178,7 @@ public class EnumerateDesignStructures {
 				for(Restriction r: resList){
 					if(r.getFactorName().equals(f.getName())){
 						if(r.getSize()!=1){
-							newF = new Factor(f.getName()+"("+/*(newFactors.size()+1)*/r.getSize()+")",l/r.getSize(),f.getLct(),f.getLcc(),f.getValue());
+							newF = new Factor(f.getName()+"("+/*(newFactors.size()+1)*/r.getSize()+")",l/r.getSize(),f.getType(),f.getLct(),f.getLcc(),f.getValue());
 							newF.setBase(index);
 							newFactors.add(newF);
 							l = r.getSize();
@@ -194,7 +196,7 @@ public class EnumerateDesignStructures {
 				for(Factor ff: newFactors){
 					l /= ff.getLevels();
 				}
-				newF = new Factor(f.getName()+"("+/*(newFactors.size()+1)*/1+")",l,f.getLct(),f.getLcc(),f.getValue());
+				newF = new Factor(f.getName()+"("+/*(newFactors.size()+1)*/1+")",l,f.getType(),f.getLct(),f.getLcc(),f.getValue());
 				newF.setBase(index);
 				newFactors.add(newF);
 			}
@@ -213,8 +215,14 @@ public class EnumerateDesignStructures {
 				e.addBase(index);
 				e.addFactor(ff);
 				e.addAllNestedWithin(nestedEffects);
+				e.setLevel(ff.getLevels());
+				e.setDf(ff.getLevels()-1);
+				
 				nestedEffects.add(e);
 				effectsList.get(0).add(e);
+				e.updateDf();
+				e.setCoef(N);
+				e.setMSquare();
 				
 				allEffects.add(e);
 				names.add(e.getName());
@@ -235,6 +243,10 @@ public class EnumerateDesignStructures {
 						e.addAllBases(ef.getBases());
 						e.addFactor(eff.getFactors().get(0));
 						e.addAllFactors(ef.getFactors());
+						e.setLevel(ef.getLevel()*eff.getLevel());
+						e.setDf(ef.getDf()*eff.getDf());
+						e.setCoef(N);
+						e.setMSquare();
 						
 						ind = names.indexOf(e.getName());
 						if(ind!=-1){
@@ -288,6 +300,7 @@ public class EnumerateDesignStructures {
 					}
 				}
 			}
+			es.updateMSquares();
 		}
 		
 		//set the restrictions
@@ -344,6 +357,9 @@ public class EnumerateDesignStructures {
 				for(Effect ef: efs){
 					if(equalLists(restrictedFactors, ef.getFactors())){
 						ef.setRestricted();
+						
+						ef.addRestrictedMSquare();
+						
 						b = true;
 						break;
 					}
@@ -381,9 +397,6 @@ public class EnumerateDesignStructures {
 		//adding complete randomization
 		structures.add(0,new ArrayList<Restriction>());
 		
-		System.out.println("Total number of design structures (including full randomization):");
-		System.out.println(structures.size());
-		System.out.println("---------------");
 		//changing the format
 		ArrayList<ArrayList<Restriction>> restrictions;
 		
@@ -419,6 +432,17 @@ public class EnumerateDesignStructures {
 		double value;
 		PrintWriter writer = new PrintWriter("ExpectedLevelChanges/src/files/values.txt", "UTF-8");
 		writer.println("value,time,cost");
+		
+		PrintWriter printer = new PrintWriter("ExpectedLevelChanges/src/files/prints.txt", "UTF-8");
+		System.out.println("Total number of design structures (including full randomization):");
+		System.out.println(structures.size());
+		System.out.println("---------------");
+		printer.println("Total number of design structures (including full randomization):");
+		printer.println(structures.size());
+		printer.println("---------------");
+		
+		String name;
+		String mSquare;
 		for(int i=0; i<structures.size();i++) {
 			value = 0;
 		    ArrayList<Restriction> rs = structures.get(i);
@@ -427,15 +451,32 @@ public class EnumerateDesignStructures {
 		    //System.out.println("Structure:");
 		    for(Restriction r: rs){
 		    	System.out.println(r);
+		    	printer.println(r);
 		    }
+		    printer.println();
+		    printer.printf("%-15s %-10s %-10s\n", "Effect", "DF", "Mean Square");
+		    //printer.println("Effect \t\t\t DF \t\t Mean Square");
 		    for(ArrayList<Effect> effs: allEffects.get(i)){
 		    	for(Effect e: effs){
 		    		System.out.print(e.getName());
+		    		name = e.getName();
+		    		//printer.print(e.getName());
 		    		if(e.getRestricted()){
 		    			System.out.print("-r");
+		    			name += "-r";
+		    			//printer.print("-r");
 		    			value -= e.getValue();
 		    		}
+		    		mSquare="";
+		    		//printer.print(" \t\t\t "+e.getDf()+" \t\t ");
+		    		for(int is=0;is<e.getMSquares().size()-1;is++){
+		    			mSquare += e.getMSquareCoefs().get(is)+"*"+e.getMSquares().get(is)+"+";
+		    		}
+		    		mSquare += e.getMSquareCoefs().get(e.getMSquares().size()-1)+"*"+e.getMSquares().get(e.getMSquares().size()-1);
+		    		printer.printf("%-15s %-10s %-10s\n", name, e.getDf(), mSquare);
 		    		
+		    		//System.out.print(", "+e.getLevel()+", "+e.getDf());
+		    		/*System.out.print("<"+e.getType()+">");
 		    		if(e.getNestedWithin().size()!=0){
 		    			System.out.print("[");
 		    			for(Effect we: e.getNestedWithin()){
@@ -447,20 +488,32 @@ public class EnumerateDesignStructures {
 		    		
 		    		System.out.print(", ");
 
-	    			System.out.println("{"+e.getEffectLevel()+"}");
+	    			System.out.println("{"+e.getEffectLevel()+"}");*/
+		    		System.out.println();
+		    		//printer.println();
 		    	}
 		    }
 		    System.out.println();
-		    System.out.println("value:" + value);
+		    printer.println();
+		    
 		    //System.out.println("tlct:");
 		    System.out.println(lct_lcc[0]);
+		    printer.println("Total Level Changing Cost: "+lct_lcc[0]);
 		    //System.out.println("tlcc:");
 		    System.out.println(lct_lcc[1]);
+		    printer.println("Total Level Changing Time: "+lct_lcc[1]);
+		    System.out.println("value:" + value);
+		    printer.printf("Value: %.4f \n", value);
 		    System.out.println("--------------");
+		    printer.println("--------------");
 		    
 		    writer.println(value+","+lct_lcc[0]+","+lct_lcc[1]);
 		}
 		writer.close();
+		//printer.println("\u03C3"); //sigma
+		//printer.println("\u03A6"+"²"); //phi
+		printer.close();
 		System.out.println(structures.size());
+		
 	}
 }

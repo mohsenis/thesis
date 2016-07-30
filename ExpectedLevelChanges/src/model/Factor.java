@@ -12,13 +12,15 @@ public class Factor implements Cloneable{
 	private int minOrder;
 	private int maxOrder;
 	private int value;
+	private int type; //0 fixed, 1 random
 	
 	private ArrayList<Factor> nestedWithin = new ArrayList<Factor>();
 	private int base;
 	
-	public Factor(String name, int levels, int lct, int lcc, int value){
+	public Factor(String name, int levels, int type, int lct, int lcc, int value){
 		this.factorName = name;
 		this.levels = levels;
+		this.type = type;
 		this.lct = lct;
 		this.lcc = lcc;
 		this.minOrder = 1;
@@ -29,6 +31,7 @@ public class Factor implements Cloneable{
 	public Factor(Factor f){
 		this.factorName = f.getName();
 		this.levels = f.getLevels();
+		this.type = f.getType();
 		this.lct = f.getLct();
 		this.lcc = f.getLcc();
 		this.minOrder = f.getMinOrder();
@@ -36,6 +39,10 @@ public class Factor implements Cloneable{
 		this.replication = f.getRep();
 		this.value = f.value;
 		nestedWithin.addAll(f.nestedWithin);
+	}
+	
+	public int getType(){
+		return this.type;
 	}
 	
 	public void setValue(int value){

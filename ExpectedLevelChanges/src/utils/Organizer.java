@@ -16,7 +16,7 @@ public class Organizer {
 		List<Factor> factors = new ArrayList<Factor>();
 
 		for(String[] info: infos){
-			factors.add(new Factor(info[0],Integer.parseInt(info[1]),Integer.parseInt(info[2]),Integer.parseInt(info[3]),Integer.parseInt(info[4])));
+			factors.add(new Factor(info[0],Integer.parseInt(info[1]),Integer.parseInt(info[2]),Integer.parseInt(info[3]),Integer.parseInt(info[4]),Integer.parseInt(info[5])));
 		}
 		
 		Collections.sort(factors, new Comparator<Factor>(){
