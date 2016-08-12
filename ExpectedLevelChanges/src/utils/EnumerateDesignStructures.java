@@ -30,8 +30,7 @@ public class EnumerateDesignStructures {
 		
 		List<ArrayList<Restriction>> structures = removeDuplicates();
 		
-		//structures = removeReplicateRestrictions(structures);
-		ArrayList<Integer> removeRests = new ArrayList<Integer>();
+		/*ArrayList<Integer> removeRests = new ArrayList<Integer>();
 		for(int i=0; i<structures.size();i++){
 			for(Restriction r: structures.get(i)){
 				if(r.getFactorName().equals("R") && r.getSize()!=1){
@@ -44,7 +43,7 @@ public class EnumerateDesignStructures {
 		for(int i=removeRests.size()-1;i>-1;i--){
 			index = removeRests.get(i);
 			structures.remove(index);
-		}
+		}*/
 		
 		return structures;
 	}
@@ -97,6 +96,7 @@ public class EnumerateDesignStructures {
 		String str1;
 		String str2;
 		String str3;
+		int c;
 		for(Factor f: factors){
 			str1 = str;
 			ArrayList<Integer> divisors;
@@ -110,6 +110,7 @@ public class EnumerateDesignStructures {
 			for(Integer i: divisors){
 				str2 = str1;
 				for(int o=f.getMinOrder();o<=f.getMaxOrder();o++){
+					c=1;
 					str3 = str2;
 					str3 += f.getName()+","+i+","+o;
 					stringDesigns.add(str3);
@@ -119,16 +120,22 @@ public class EnumerateDesignStructures {
 					for(Factor ff:factors){
 						Factor factor = new Factor(ff);
 						if(ff.equals(f)){
+							c *= i;
 							factor.setLevels(i);
 							factor.setMinOrder(o+1);
 							factor.setMaxOrder(o+1);
 						}else{
+							c *= factor.getLevels();
 							if(factor.getMinOrder()<o || factor.getMaxOrder()==1){
 								factor.setMinOrder(o);
 								factor.setMaxOrder(o+1);
 							}
 						}
+						
 						newFactors.add(factor);
+					}
+					if(c==1){
+						stringDesigns.remove(stringDesigns.size()-1);	
 					}
 					structuresString(newFactors, str3);
 				}
