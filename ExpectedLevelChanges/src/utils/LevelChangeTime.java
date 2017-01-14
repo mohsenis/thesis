@@ -128,7 +128,7 @@ public class LevelChangeTime {
 		}else{
 			float response = tlct(newFactors, newRestrictions, replication);
 			if(!secondFactorRestrictedOnly){
-				response += (multiple-1)*tlct(newFactorsB, newRestrictions, replication)-((float) 1/secondFactorL)*(secondFactorSplit-1)*(newFactors.get(1).getLct()-newFactors.get(2).getLct());;
+				response += (multiple-1)*tlct(newFactorsB, newRestrictions, replication)-((float) 1/secondFactorL)*(secondFactorSplit-1)*(newFactors.get(1).getLct()-newFactors.get(2).getLct());
 			}else{
 				response += (multiple-1)*tlct(newFactorsB, newRestrictions, replication);
 			}

@@ -10,12 +10,34 @@ public class Effect {
 	private ArrayList<String> mSquares = new ArrayList<String>();
 	private ArrayList<Integer> mSquaresCoefs = new ArrayList<Integer>();
 	
+	private ArrayList<String> mSquaresS = new ArrayList<String>();
+	private ArrayList<Integer> mSquaresCoefsS = new ArrayList<Integer>();
+	
 	private boolean restricted = false;
 	private int position = 1;
 	private int level;
 	private int df;
 	private int coef;
 	private String mSquare;
+	private boolean repEff = false;
+	private boolean rem = false;
+	private int errIndex = 0;
+	
+	public void setErrIndex(int i){
+		this.errIndex=i;
+	}
+	
+	public boolean getRem(){
+		return this.rem;
+	}
+	
+	public void setRem(){
+		this.rem=true;
+	}
+	
+	public boolean getRepEff(){
+		return this.repEff;
+	}
 	
 	public void setLevel(int l){
 		this.level = l;
@@ -51,6 +73,10 @@ public class Effect {
 	}
 	
 	public String getName(){
+		
+		if(this.errIndex>0){
+			return "error"+errIndex;
+		}
 		
 		ArrayList<String> names = new ArrayList<String>();
 		for(Factor f: this.factors){
@@ -196,8 +222,16 @@ public class Effect {
 		return this.mSquares;
 	}
 	
+	public ArrayList<String> getMSquaresS(){
+		return this.mSquaresS;
+	}
+	
 	public ArrayList<Integer> getMSquareCoefs(){
 		return this.mSquaresCoefs;
+	}
+	
+	public ArrayList<Integer> getMSquareCoefsS(){
+		return this.mSquaresCoefsS;
 	}
 	
 	public void setMSquare(){
@@ -207,6 +241,15 @@ public class Effect {
 		this.mSquaresCoefs.add(1);
 		this.mSquares.add(this.mSquare);
 		this.mSquaresCoefs.add(this.coef);
+		
+		this.mSquaresS.add("\u03C3"+"²");
+		this.mSquaresCoefsS.add(1);
+		if(this.getType()==0){
+			this.mSquaresS.add(this.mSquare);
+			this.mSquaresCoefsS.add(this.coef);
+		}else{
+			this.repEff = true;
+		}
 	}
 	
 	public void updateMSquares(){
@@ -225,9 +268,15 @@ public class Effect {
 		this.mSquares.add(mSquare);
 		this.mSquaresCoefs.add(this.coef);
 		
+		this.mSquaresS.add(mSquare);
+		this.mSquaresCoefsS.add(this.coef);
+		
 		for(Effect e: this.nestedWithin){
 			e.getMSquares().add(mSquare);
 			e.getMSquareCoefs().add(this.coef);
+			
+			e.getMSquaresS().add(mSquare);
+			e.getMSquareCoefsS().add(this.coef);
 		}
 	}
 	

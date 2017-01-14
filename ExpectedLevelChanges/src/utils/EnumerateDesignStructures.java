@@ -377,6 +377,38 @@ public class EnumerateDesignStructures {
 			}
 			
 		}
+		
+		//build error terms
+		ArrayList<Effect> errorE = new ArrayList<Effect>();
+		for(ArrayList<Effect> efs: effectsList){
+			for(Effect ef: efs){
+				if(ef.getRepEff()){
+					errorE.add(ef);
+				}
+			}
+		}
+		
+		Effect e1;
+		Effect e2;
+//		ArrayList<Effect> removeE = new ArrayList<Effect>();
+		for(int i=0; i<errorE.size()-1; i++){
+			e1 = errorE.get(i);
+			for(int j=i+1; j<errorE.size(); j++){
+				e2 = errorE.get(j);
+				if(e1.getMSquaresS().toString().equals(e2.getMSquaresS().toString())){
+					e1.setRem();
+					e2.setDf(e2.getDf()+e1.getDf());
+				}
+			}
+		}
+		
+		int i=1;
+		for(Effect ef:errorE){
+			if(!ef.getRem()){
+				ef.setErrIndex(i); 
+				i++;
+			}
+		}
 
 		return effectsList;
 	}
@@ -450,7 +482,10 @@ public class EnumerateDesignStructures {
 		
 		String name;
 		String mSquare;
+		String mSquareS;
 		for(int i=0; i<structures.size();i++) {
+			printer.println(i+1);
+			printer.println();
 			value = 0;
 		    ArrayList<Restriction> rs = structures.get(i);
 		    float[] lct_lcc = lct_lcc_list.get(i);
@@ -461,7 +496,9 @@ public class EnumerateDesignStructures {
 		    	printer.println(r);
 		    }
 		    printer.println();
-		    printer.printf("%-15s %-10s %-10s\n", "Effect", "DF", "Mean Square");
+		    //printer.printf("%-15s %-10s %-10s\n", "Effect", "DF", "Mean Square");
+		    printer.printf("%-15s %-10s %-10s %-50s %-10s\n", "Effect", "Position", "DF", "Mean Square", "Mean Square");
+//		    printer.printf("Effect,Position,DF,Mean Square\n");
 		    //printer.println("Effect \t\t\t DF \t\t Mean Square");
 		    for(ArrayList<Effect> effs: allEffects.get(i)){
 		    	for(Effect e: effs){
@@ -480,9 +517,21 @@ public class EnumerateDesignStructures {
 		    			mSquare += e.getMSquareCoefs().get(is)+"*"+e.getMSquares().get(is)+"+";
 		    		}
 		    		mSquare += e.getMSquareCoefs().get(e.getMSquares().size()-1)+"*"+e.getMSquares().get(e.getMSquares().size()-1);
-		    		printer.printf("%-15s %-10s %-10s\n", name, e.getDf(), mSquare);
 		    		
-		    		//System.out.print(", "+e.getLevel()+", "+e.getDf());
+		    		mSquareS="";
+		    		//printer.print(" \t\t\t "+e.getDf()+" \t\t ");
+		    		for(int is=0;is<e.getMSquaresS().size()-1;is++){
+		    			mSquareS += e.getMSquareCoefsS().get(is)+"*"+e.getMSquaresS().get(is)+"+";
+		    		}
+		    		mSquareS += e.getMSquareCoefsS().get(e.getMSquaresS().size()-1)+"*"+e.getMSquaresS().get(e.getMSquaresS().size()-1);
+		    		
+		    		if(e.getRem()){
+		    			mSquareS="";
+		    		}
+		    		//printer.printf("%-15s %-10s %-10s\n", name, e.getDf(), mSquare);
+		    		printer.printf("%-15s %-10s %-10s %-50s %-10s\n", name, e.getPosition(), e.getDf(), mSquare, mSquareS);
+//		    		printer.printf("%s,%s,%s,%s\n", name, e.getPosition(), e.getDf(), mSquare);
+
 		    		/*System.out.print("<"+e.getType()+">");
 		    		if(e.getNestedWithin().size()!=0){
 		    			System.out.print("[");
@@ -505,10 +554,10 @@ public class EnumerateDesignStructures {
 		    
 		    //System.out.println("tlct:");
 		    System.out.println(lct_lcc[0]);
-		    printer.println("Total Level Changing Cost: "+lct_lcc[0]);
+		    printer.println("Total Level Changing Time: "+lct_lcc[0]);
 		    //System.out.println("tlcc:");
 		    System.out.println(lct_lcc[1]);
-		    printer.println("Total Level Changing Time: "+lct_lcc[1]);
+		    printer.println("Total Level Changing Cost: "+lct_lcc[1]);
 		    System.out.println("value:" + value);
 		    printer.printf("Value: %.4f \n", value);
 		    System.out.println("--------------");
