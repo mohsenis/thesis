@@ -13,6 +13,7 @@ public class Factor implements Cloneable{
 	private int maxOrder;
 	private int value;
 	private int type; //0 fixed, 1 random
+	private int df;
 	
 	private ArrayList<Factor> nestedWithin = new ArrayList<Factor>();
 	private int base;
@@ -43,6 +44,14 @@ public class Factor implements Cloneable{
 	
 	public int getType(){
 		return this.type;
+	}
+	
+	public void setDf(int df){
+		this.df = df;
+	}
+	
+	public int getDf(){
+		return this.df;
 	}
 	
 	public void setValue(int value){

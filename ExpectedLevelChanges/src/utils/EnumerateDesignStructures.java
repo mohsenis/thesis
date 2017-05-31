@@ -236,7 +236,9 @@ public class EnumerateDesignStructures {
 				effectMap.put(e.getName(), e);
 			}
 		}
-		
+		for(Effect eee:effectsList.get(0)){//add df to factors
+			eee.getFactors().get(0).setDf(eee.getDf());
+		}
 		ArrayList<Effect> effs;
 		int ind;
 		for(int i=0; i<effectsList.size()-1;i++){
@@ -398,6 +400,7 @@ public class EnumerateDesignStructures {
 				if(e1.getMSquaresS().toString().equals(e2.getMSquaresS().toString())){
 					e1.setRem();
 					e2.setDf(e2.getDf()+e1.getDf());
+					break;
 				}
 			}
 		}
@@ -407,6 +410,54 @@ public class EnumerateDesignStructures {
 			if(!ef.getRem()){
 				ef.setErrIndex(i); 
 				i++;
+			}
+		}
+		
+		//for allEffect, if they are not errorE, 
+		//remove the second msquare (itself), check with msquare of the errorE's
+		ArrayList<String> msquares;
+		ArrayList<String> msquaresS;
+		for(ArrayList<Effect> efs: effectsList){
+			for(Effect ef: efs){
+				if(!ef.getRepEff() && ef.getTest().equals("")){
+					msquares = new ArrayList<String>();
+					for(int j=0; j<ef.getMSquaresS().size();j++){
+						if(j==1){
+							continue;
+						}
+						msquares.add(ef.getMSquaresS().get(j));
+					}
+					for(Effect eef:errorE){
+						if(!eef.getRem()){
+							if(msquares.toString().equals(eef.getMSquaresS().toString())){
+								ef.setEdf(eef.getDf());
+								ef.setTest("e");
+								break;
+							}
+						}
+					}
+					if(ef.getTest().equals("") && ef.getRestricted()){
+						msquaresS = new ArrayList<String>();
+						for(String s:msquares){
+							if(!s.equals("\u03C3"+"²"+"r"+"("+ef.getName()+")")){
+								msquaresS.add(s);
+							}
+						}
+						for(Effect eef:errorE){
+							if(!eef.getRem()){
+								if(msquaresS.toString().equals(eef.getMSquaresS().toString())){
+									ef.setEdf(eef.getDf());
+									ef.setTest("c");
+									break;
+								}
+							}
+						}
+					}
+					//if still no test, check for interaction test
+					if(ef.getTest().equals("")){
+						ef.setTest("n");
+					}
+				}
 			}
 		}
 
@@ -469,6 +520,9 @@ public class EnumerateDesignStructures {
 			allEffects.add(effects);
 		}
 		double value;
+		double dValue;
+		PrintWriter writerS = new PrintWriter("ExpectedLevelChanges/src/files/printS.csv");
+		writerS.println("Index,Value,Time,Cost,Design");
 		PrintWriter writer = new PrintWriter("ExpectedLevelChanges/src/files/values.txt", "UTF-8");
 		writer.println("value,time,cost");
 		
@@ -487,17 +541,19 @@ public class EnumerateDesignStructures {
 			printer.println(i+1);
 			printer.println();
 			value = 0;
+			dValue = 0;
 		    ArrayList<Restriction> rs = structures.get(i);
 		    float[] lct_lcc = lct_lcc_list.get(i);
-		    
+		    String design="";
 		    //System.out.println("Structure:");
 		    for(Restriction r: rs){
 		    	System.out.println(r);
 		    	printer.println(r);
+		    	design+=r;
 		    }
 		    printer.println();
 		    //printer.printf("%-15s %-10s %-10s\n", "Effect", "DF", "Mean Square");
-		    printer.printf("%-15s %-10s %-10s %-50s %-10s\n", "Effect", "Position", "DF", "Mean Square", "Mean Square");
+		    printer.printf("%-15s %-10s %-10s %-10s %-10s %-10s\n", "Effect", "Position", "DF", "EDF", "Test", "Mean Square");
 //		    printer.printf("Effect,Position,DF,Mean Square\n");
 		    //printer.println("Effect \t\t\t DF \t\t Mean Square");
 		    for(ArrayList<Effect> effs: allEffects.get(i)){
@@ -511,6 +567,10 @@ public class EnumerateDesignStructures {
 		    			//printer.print("-r");
 		    			value -= e.getValue();
 		    		}
+		    		if(!e.getRepEff()){
+		    			dValue += e.getTestValue()*e.getEdf()*e.getDfValue();
+		    		}
+		    		
 		    		mSquare="";
 		    		//printer.print(" \t\t\t "+e.getDf()+" \t\t ");
 		    		for(int is=0;is<e.getMSquares().size()-1;is++){
@@ -528,8 +588,8 @@ public class EnumerateDesignStructures {
 		    		if(e.getRem()){
 		    			mSquareS="";
 		    		}
-		    		//printer.printf("%-15s %-10s %-10s\n", name, e.getDf(), mSquare);
-		    		printer.printf("%-15s %-10s %-10s %-50s %-10s\n", name, e.getPosition(), e.getDf(), mSquare, mSquareS);
+		    		printer.printf("%-15s %-10s %-10s %-10s %-10s %-10s\n", name, e.getPosition(), e.getDf(), e.getEdf(), e.getTest(), mSquareS);
+//		    		printer.printf("%-15s %-10s %-10s %-10s %-10s %-50s %-10s\n", name, e.getPosition(), e.getDf(), e.getEdf(), e.getTest(), mSquare, mSquareS);
 //		    		printer.printf("%s,%s,%s,%s\n", name, e.getPosition(), e.getDf(), mSquare);
 
 		    		/*System.out.print("<"+e.getType()+">");
@@ -564,6 +624,8 @@ public class EnumerateDesignStructures {
 		    printer.println("--------------");
 		    
 		    writer.println(value+","+lct_lcc[0]+","+lct_lcc[1]);
+		    
+		    writerS.println((i+1)+","+dValue+","+lct_lcc[0]+","+lct_lcc[1]+",\""+design+"\"");
 		}
 		writer.close();
 		//printer.println("\u03C3"); //sigma

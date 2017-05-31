@@ -3,6 +3,8 @@ package model;
 import java.util.ArrayList;
 import java.util.Collections;
 
+import utils.Permutate;
+
 public class Effect {
 	private ArrayList<Factor> factors = new ArrayList<Factor>();
 	private ArrayList<Integer> bases = new ArrayList<Integer>();
@@ -22,6 +24,40 @@ public class Effect {
 	private boolean repEff = false;
 	private boolean rem = false;
 	private int errIndex = 0;
+	private int edf = 0;
+	private String test = ""; //e:exact (+1), c:conservative (-1), i:interaction (0), n:none (-1)
+	
+	public void setTest(String test){
+		this.test=test;
+	}
+	
+	public int getTestValue(){
+		switch (this.test){
+			case "e":
+				return 1;
+			case "i":
+				return 0;
+			case "c":
+				return -1;
+			default:
+				return -1;
+		}
+			
+			
+	}
+	
+	public double getDfValue(){
+		int[] dfs = new int[this.getFactors().size()];
+		for(int i=0;i<this.getFactors().size();i++){
+			dfs[i]=this.getFactors().get(i).getDf();
+		}
+		int dfSum = Permutate.sumProduct(dfs);
+		return (double) this.df/dfSum;
+	}
+	
+	public String getTest(){
+		return this.test;
+	}
 	
 	public void setErrIndex(int i){
 		this.errIndex=i;
@@ -45,6 +81,14 @@ public class Effect {
 	
 	public int getLevel(){
 		return this.level;
+	}
+	
+	public void setEdf(int edf){
+		this.edf = edf;
+	}
+	
+	public int getEdf(){
+		return this.edf;
 	}
 	
 	public void setDf(int df){
