@@ -9,10 +9,14 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Scanner;
 
 import model.Effect;
 import model.Factor;
 import model.Restriction;
+import model.SplitFactors;
+import model.Splits;
 
 public class EnumerateDesignStructures {
 	
@@ -86,7 +90,7 @@ public class EnumerateDesignStructures {
 			System.out.println(++i);
 			String[] strs = str.split(";");
 			for(String s: strs){
-				System.out.println(s);
+//				System.out.println(s);
 			}
 			System.out.println("------------");
 		}
@@ -479,6 +483,13 @@ public class EnumerateDesignStructures {
 		List<String[]> infos = readCSV.readFile("factors");
 		List<Factor> factors = Organizer.factorMapper(infos, replication); 
 		
+		int N = 1;
+		for(Factor f:factors){
+			N*=f.getLevels();
+		}
+		int delta = 4;
+		int sigma = 3;
+		
 		List<float[]> lct_lcc_list = new ArrayList<float[]>();
 		List<ArrayList<Restriction>> structures = listDesignStructures(factors);
 		ArrayList<ArrayList<ArrayList<Effect>>> allEffects = new ArrayList<ArrayList<ArrayList<Effect>>>();
@@ -521,12 +532,12 @@ public class EnumerateDesignStructures {
 		}
 		double value;
 		double dValue;
-		PrintWriter writerS = new PrintWriter("ExpectedLevelChanges/src/files/printS.csv");
-		writerS.println("Index,Value,Time,Cost,Design");
-		PrintWriter writer = new PrintWriter("ExpectedLevelChanges/src/files/values.txt", "UTF-8");
+//		PrintWriter writerS = new PrintWriter("C:/Users/mohse/git/thesis/ExpectedLevelChanges/src/files/printS.csv");
+//		writerS.println("Index,Value,Time,Cost,Design");
+		PrintWriter writer = new PrintWriter("C:/Users/mohse/git/thesis/ExpectedLevelChanges/src/files/values.txt", "UTF-8");
 		writer.println("value,time,cost");
 		
-		PrintWriter printer = new PrintWriter("ExpectedLevelChanges/src/files/prints.txt", "UTF-8");
+		PrintWriter printer = new PrintWriter("C:/Users/mohse/git/thesis/ExpectedLevelChanges/src/files/prints.txt", "UTF-8");
 		System.out.println("Total number of design structures (including full randomization):");
 		System.out.println(structures.size());
 		System.out.println("---------------");
@@ -537,7 +548,9 @@ public class EnumerateDesignStructures {
 		String name;
 		String mSquare;
 		String mSquareS;
+		
 		for(int i=0; i<structures.size();i++) {
+			HashMap<ArrayList<Integer>,Splits> splits = new HashMap<ArrayList<Integer>,Splits>();
 			printer.println(i+1);
 			printer.println();
 			value = 0;
@@ -551,6 +564,7 @@ public class EnumerateDesignStructures {
 		    	printer.println(r);
 		    	design+=r;
 		    }
+		    System.out.println(i);
 		    printer.println();
 		    //printer.printf("%-15s %-10s %-10s\n", "Effect", "DF", "Mean Square");
 		    printer.printf("%-15s %-10s %-10s %-10s %-10s %-10s\n", "Effect", "Position", "DF", "EDF", "Test", "Mean Square");
@@ -558,11 +572,11 @@ public class EnumerateDesignStructures {
 		    //printer.println("Effect \t\t\t DF \t\t Mean Square");
 		    for(ArrayList<Effect> effs: allEffects.get(i)){
 		    	for(Effect e: effs){
-		    		System.out.print(e.getName());
+//		    		System.out.print(e.getName());
 		    		name = e.getName();
 		    		//printer.print(e.getName());
 		    		if(e.getRestricted()){
-		    			System.out.print("-r");
+//		    			System.out.print("-r");
 		    			name += "-r";
 		    			//printer.print("-r");
 		    			value -= e.getValue();
@@ -588,50 +602,149 @@ public class EnumerateDesignStructures {
 		    		if(e.getRem()){
 		    			mSquareS="";
 		    		}
+		    		
+		    		String splitName=e.getName();
+		    		int cap;
+		    		
+		    		if(!splitName.contains("R")&&!splitName.contains("error")){
+		    			cap = 1;
+//		    			String str = "AB(2)CD(10)E(4)";
+		    			int n;
+		    			String next;
+		    			int c;
+		    			int pInd;
+		    			String luName;
+		    			ArrayList<Integer[]> ees = new ArrayList<Integer[]>();
+		    			while (splitName.length()>0){
+		    				Integer[] es = new Integer[4];
+		    				n = splitName.substring(0, 1).toCharArray()[0];
+		    				if(splitName.length()==1){
+		    					c = 1;
+		    					luName = splitName.substring(0, 1);
+		    					splitName = splitName.substring(1);
+
+//		    					System.out.println(name+"_"+c);
+		    				}else{
+			    				next = splitName.substring(1,2);
+			    				if(next.equals("(")){
+			    					pInd = splitName.indexOf(")");
+			    					c = Integer.parseInt(splitName.substring(2,pInd));
+			    					luName = splitName.substring(0, pInd+1);
+			    					splitName = splitName.substring(pInd+1);
+//			    					System.out.println(name+"_"+c);
+			    				}else{
+			    					luName = splitName.substring(0, 1);
+			    					splitName = splitName.substring(1);
+			    					c = 1;
+//			    					System.out.println(name+"_"+c);
+			    				}
+		    				}
+		    				for(Factor f:e.getFactors()){
+		    					if(luName.equals(f.getName())){
+		    						es[1] = f.getLevels();
+//		    						if(i==138){
+//		    							System.out.println(f.getName()+","+f.getLevels());
+//		    							for(Factor ff:f.getNestedWithin()){
+//		    								System.out.println("    "+ff.getName()+","+ff.getLevels());
+//		    							}
+//		    							
+//		    						}
+		    						break;
+		    					}
+		    				}
+		    				cap*=c;
+		    				es[0] = c;
+//		    				es[1] = e.getLevel()/c;
+		    				es[2] = es[0]*es[1];
+		    				es[3] = n;
+		    				
+		    				ees.add(es);
+		    			}
+		    			
+		    			int ool = cap*e.getLevel();
+		    			splitName=e.getName();
+		    			splitName = splitName.replace("(", "");
+		    			splitName = splitName.replace(")", "");
+		    			splitName = splitName.replaceAll("\\d","");
+		    			
+		    			SplitFactors elm = new SplitFactors();
+		    			elm.setOc(cap);
+		    			elm.setOl(e.getLevel());
+		    			elm.setDf(e.getDf());
+		    			elm.setEdf(e.getEdf());
+		    			elm.setSf(ees);
+		    			if(e.getTest().equals("e")){
+		    				elm.setTtype(1);
+		    			}else{
+		    				elm.setTtype(0);
+		    			}
+		    			
+//		    			Integer[] elm = new Integer[5];
+//		    			
+//		    			elm[0] = cap;
+//		    			elm[1] = e.getLevel();
+//		    			elm[2] = e.getDf();
+//		    			elm[3] = e.getEdf();
+//		    			if(e.getTest().equals("e")){
+//		    				elm[4] = 1;
+//		    			}else{
+//		    				elm[4] = 0;
+//		    			}
+		    			if(splits.containsKey(e.getBases())){
+		    				splits.get(e.getBases()).addElm(elm);
+			    		}else{
+			    			Splits split = new Splits(splitName, ool, i, sigma, N);
+			    			
+			    			split.addElm(elm);
+			    			splits.put(e.getBases(),split);
+			    		}
+		    		}
+		    		
+		    		
+//		    		System.out.println(e.getName());
+//		    		System.out.println(e.getBases());
+//		    		System.out.println(e.getFactors());
+//		    		System.out.println();
+//		    		PowerEstimation.estimatedPower(splitFactors, N, delta, sigma);
+		    		
 		    		printer.printf("%-15s %-10s %-10s %-10s %-10s %-10s\n", name, e.getPosition(), e.getDf(), e.getEdf(), e.getTest(), mSquareS);
 //		    		printer.printf("%-15s %-10s %-10s %-10s %-10s %-50s %-10s\n", name, e.getPosition(), e.getDf(), e.getEdf(), e.getTest(), mSquare, mSquareS);
 //		    		printer.printf("%s,%s,%s,%s\n", name, e.getPosition(), e.getDf(), mSquare);
 
-		    		/*System.out.print("<"+e.getType()+">");
-		    		if(e.getNestedWithin().size()!=0){
-		    			System.out.print("[");
-		    			for(Effect we: e.getNestedWithin()){
-		    				System.out.print(we.getName());
-		    				System.out.print("-");
-		    			}
-		    			System.out.print("]");
-		    		}
 		    		
-		    		System.out.print(", ");
-
-	    			System.out.println("{"+e.getEffectLevel()+"}");*/
-		    		System.out.println();
+//		    		System.out.println();
 		    		//printer.println();
 		    	}
 		    }
 		    System.out.println();
 		    printer.println();
-		    
+		    /*for (Splits s : splits.values()) {
+		        PowerEstimation.estimatedPower(s);
+		    }*/
+		    for (Map.Entry<ArrayList<Integer>, Splits> entry : splits.entrySet()) {
+			    System.out.println(entry.getKey());
+			    PowerEstimation.estimatedPower(entry.getValue());
+		    }
 		    //System.out.println("tlct:");
-		    System.out.println(lct_lcc[0]);
+		    System.out.println("Total Level Changing Time: "+lct_lcc[0]);
 		    printer.println("Total Level Changing Time: "+lct_lcc[0]);
 		    //System.out.println("tlcc:");
-		    System.out.println(lct_lcc[1]);
+		    System.out.println("Total Level Changing Cost: "+lct_lcc[1]);
 		    printer.println("Total Level Changing Cost: "+lct_lcc[1]);
-		    System.out.println("value:" + value);
+//		    System.out.println("value:" + value);
 		    printer.printf("Value: %.4f \n", value);
 		    System.out.println("--------------");
 		    printer.println("--------------");
 		    
 		    writer.println(value+","+lct_lcc[0]+","+lct_lcc[1]);
 		    
-		    writerS.println((i+1)+","+dValue+","+lct_lcc[0]+","+lct_lcc[1]+",\""+design+"\"");
+//		    writerS.println((i+1)+","+dValue+","+lct_lcc[0]+","+lct_lcc[1]+",\""+design+"\"");
 		}
 		writer.close();
 		//printer.println("\u03C3"); //sigma
 		//printer.println("\u03A6"+"²"); //phi
 		printer.close();
-		System.out.println(structures.size());
+//		System.out.println(structures.size());
 		
 	}
 }
