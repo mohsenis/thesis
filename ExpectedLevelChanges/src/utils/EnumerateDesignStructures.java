@@ -10,8 +10,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
-
 import model.Effect;
 import model.Factor;
 import model.Restriction;
@@ -85,15 +83,15 @@ public class EnumerateDesignStructures {
 	}
 	
 	public static void showDesigns(ArrayList<String> designs){
-		int i=0;
-		for(String str: designs){
-			System.out.println(++i);
-			String[] strs = str.split(";");
-			for(String s: strs){
+//		int i=0;
+//		for(String str: designs){
+//			System.out.println(++i);
+//			String[] strs = str.split(";");
+//			for(String s: strs){
 //				System.out.println(s);
-			}
-			System.out.println("------------");
-		}
+//			}
+//			System.out.println("------------");
+//		}
 	}
 	
 	public static void structuresString(List<Factor> factors, String str){
@@ -104,12 +102,15 @@ public class EnumerateDesignStructures {
 		for(Factor f: factors){
 			str1 = str;
 			ArrayList<Integer> divisors;
-//			if(f.getName().equals("R")){
-//				divisors = new ArrayList<Integer>();
-//				divisors.add(1);
-//			}else{
+			if(f.getName().equals("R")){
+				if(!str1.equals("")){
+					continue;
+				}
+				divisors = new ArrayList<Integer>();
+				divisors.add(1);
+			}else{
 				divisors = allDivisors(f.getLevels());
-//			}
+			}
 			
 			for(Integer i: divisors){
 				str2 = str1;
@@ -488,7 +489,7 @@ public class EnumerateDesignStructures {
 			N*=f.getLevels();
 		}
 		int delta = 4;
-		int sigma = 3;
+		int sigma = 4;
 		
 		List<float[]> lct_lcc_list = new ArrayList<float[]>();
 		List<ArrayList<Restriction>> structures = listDesignStructures(factors);
@@ -532,10 +533,11 @@ public class EnumerateDesignStructures {
 		}
 		double value;
 		double dValue;
+		String sep = "$";
 //		PrintWriter writerS = new PrintWriter("C:/Users/mohse/git/thesis/ExpectedLevelChanges/src/files/printS.csv");
 //		writerS.println("Index,Value,Time,Cost,Design");
 		PrintWriter writer = new PrintWriter("C:/Users/mohse/git/thesis/ExpectedLevelChanges/src/files/values.txt", "UTF-8");
-		writer.println("value,time,cost");
+		writer.println("effectiveness"+sep+"efficiency"+sep+"design");
 		
 		PrintWriter printer = new PrintWriter("C:/Users/mohse/git/thesis/ExpectedLevelChanges/src/files/prints.txt", "UTF-8");
 		System.out.println("Total number of design structures (including full randomization):");
@@ -564,7 +566,7 @@ public class EnumerateDesignStructures {
 		    	printer.println(r);
 		    	design+=r;
 		    }
-		    System.out.println(i);
+		    System.out.println(i+1);
 		    printer.println();
 		    //printer.printf("%-15s %-10s %-10s\n", "Effect", "DF", "Mean Square");
 		    printer.printf("%-15s %-10s %-10s %-10s %-10s %-10s\n", "Effect", "Position", "DF", "EDF", "Test", "Mean Square");
@@ -693,7 +695,7 @@ public class EnumerateDesignStructures {
 		    			if(splits.containsKey(e.getBases())){
 		    				splits.get(e.getBases()).addElm(elm);
 			    		}else{
-			    			Splits split = new Splits(splitName, ool, i, sigma, N);
+			    			Splits split = new Splits(splitName, ool, delta, sigma, N);
 			    			
 			    			split.addElm(elm);
 			    			splits.put(e.getBases(),split);
@@ -721,11 +723,23 @@ public class EnumerateDesignStructures {
 		    /*for (Splits s : splits.values()) {
 		        PowerEstimation.estimatedPower(s);
 		    }*/
-		    for (Map.Entry<ArrayList<Integer>, Splits> entry : splits.entrySet()) {
-			    System.out.println(entry.getKey());
-			    PowerEstimation.estimatedPower(entry.getValue());
-		    }
+//		    if(i==4){
+		    
+		    	HashMap<String,Double> powers = new HashMap<String,Double>();
+			    for (Map.Entry<ArrayList<Integer>, Splits> entry : splits.entrySet()) {
+//				    System.out.println(entry.getKey());
+				    double estimatedPower = PowerEstimation.estimatedPower(entry.getValue());
+				    powers.put(entry.getValue().getName(), estimatedPower);
+				    
+				    System.out.println(entry.getValue().getName()+": "+estimatedPower);
+			    }
+//		    }
+			    double effectiveness = getEffectiveness(powers);
 		    //System.out.println("tlct:");
+			    
+		    System.out.println("Overall Effectiveness: "+ effectiveness);
+		    printer.println("Oveall Effectiveness: "+effectiveness);
+			
 		    System.out.println("Total Level Changing Time: "+lct_lcc[0]);
 		    printer.println("Total Level Changing Time: "+lct_lcc[0]);
 		    //System.out.println("tlcc:");
@@ -736,7 +750,7 @@ public class EnumerateDesignStructures {
 		    System.out.println("--------------");
 		    printer.println("--------------");
 		    
-		    writer.println(value+","+lct_lcc[0]+","+lct_lcc[1]);
+		    writer.println(effectiveness+sep+lct_lcc[0]+sep+design);
 		    
 //		    writerS.println((i+1)+","+dValue+","+lct_lcc[0]+","+lct_lcc[1]+",\""+design+"\"");
 		}
@@ -744,7 +758,15 @@ public class EnumerateDesignStructures {
 		//printer.println("\u03C3"); //sigma
 		//printer.println("\u03A6"+"²"); //phi
 		printer.close();
-//		System.out.println(structures.size());
+		System.out.println("done");
 		
+	}
+	
+	public static double getEffectiveness(HashMap<String,Double> powers){
+		double effectiveness = 0;
+		for (Map.Entry<String, Double> entry : powers.entrySet()) {
+			effectiveness += entry.getValue()/(((double) entry.getKey().length()));
+		}
+		return effectiveness;
 	}
 }
