@@ -136,8 +136,13 @@ public class PowerEstimation {
 	    }
 		
 		double estimatedPower = getEstimatedPower(freq, counter);
-		
-		
+//		for(int i=0;i<p.length;i++){
+//			System.out.print(p[i]+",");
+//		}
+//		System.out.println();
+//		for(int i=0;i<permf.length;i++){
+//			System.out.print(permf[i]+",");
+//		}
 		return estimatedPower;
 		
 		
@@ -245,7 +250,7 @@ public class PowerEstimation {
 				}
 			}else{
 				for(int i=0;i<list.get(level)[2];i++){
-					p[index+i] = (0)*permf[i];
+					p[index+i] = (-1)*permf[i];
 				}
 			}
 		}else{

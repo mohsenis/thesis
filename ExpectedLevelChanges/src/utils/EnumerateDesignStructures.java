@@ -550,8 +550,12 @@ public class EnumerateDesignStructures {
 		String name;
 		String mSquare;
 		String mSquareS;
+		String printStr;
+		PrintSorted ps = new PrintSorted();
+		ps.setTotal(structures.size());
 		
 		for(int i=0; i<structures.size();i++) {
+			printStr="";
 			HashMap<ArrayList<Integer>,Splits> splits = new HashMap<ArrayList<Integer>,Splits>();
 			printer.println(i+1);
 			printer.println();
@@ -564,12 +568,15 @@ public class EnumerateDesignStructures {
 		    for(Restriction r: rs){
 		    	System.out.println(r);
 		    	printer.println(r);
+		    	printStr+= String.format(r+"\n");
 		    	design+=r;
 		    }
 		    System.out.println(i+1);
 		    printer.println();
+		    printStr+= String.format("\n");
 		    //printer.printf("%-15s %-10s %-10s\n", "Effect", "DF", "Mean Square");
 		    printer.printf("%-15s %-10s %-10s %-10s %-10s %-10s\n", "Effect", "Position", "DF", "EDF", "Test", "Mean Square");
+		    printStr+=String.format("%-15s %-10s %-10s %-10s %-10s %-10s\n", "Effect", "Position", "DF", "EDF", "Test", "Mean Square");
 //		    printer.printf("Effect,Position,DF,Mean Square\n");
 		    //printer.println("Effect \t\t\t DF \t\t Mean Square");
 		    for(ArrayList<Effect> effs: allEffects.get(i)){
@@ -710,6 +717,7 @@ public class EnumerateDesignStructures {
 //		    		PowerEstimation.estimatedPower(splitFactors, N, delta, sigma);
 		    		
 		    		printer.printf("%-15s %-10s %-10s %-10s %-10s %-10s\n", name, e.getPosition(), e.getDf(), e.getEdf(), e.getTest(), mSquareS);
+		    		printStr+=String.format("%-15s %-10s %-10s %-10s %-10s %-10s\n", name, e.getPosition(), e.getDf(), e.getEdf(), e.getTest(), mSquareS);
 //		    		printer.printf("%-15s %-10s %-10s %-10s %-10s %-50s %-10s\n", name, e.getPosition(), e.getDf(), e.getEdf(), e.getTest(), mSquare, mSquareS);
 //		    		printer.printf("%s,%s,%s,%s\n", name, e.getPosition(), e.getDf(), mSquare);
 
@@ -720,41 +728,54 @@ public class EnumerateDesignStructures {
 		    }
 		    System.out.println();
 		    printer.println();
+		    printStr+=String.format("\n");
 		    /*for (Splits s : splits.values()) {
 		        PowerEstimation.estimatedPower(s);
 		    }*/
 //		    if(i==4){
-		    
-		    	HashMap<String,Double> powers = new HashMap<String,Double>();
-			    for (Map.Entry<ArrayList<Integer>, Splits> entry : splits.entrySet()) {
+		    boolean exact = true;
+	    	HashMap<String,Double> powers = new HashMap<String,Double>();
+		    for (Map.Entry<ArrayList<Integer>, Splits> entry : splits.entrySet()) {
 //				    System.out.println(entry.getKey());
-				    double estimatedPower = PowerEstimation.estimatedPower(entry.getValue());
-				    powers.put(entry.getValue().getName(), estimatedPower);
-				    
-				    System.out.println(entry.getValue().getName()+": "+estimatedPower);
+			    double estimatedPower = PowerEstimation.estimatedPower(entry.getValue());
+			    powers.put(entry.getValue().getName(), estimatedPower);
+			    if( estimatedPower==0.0){
+			    	exact=false;
 			    }
+			    System.out.println(entry.getValue().getName()+": "+estimatedPower);
+		    }
 //		    }
-			    double effectiveness = getEffectiveness(powers);
+			double effectiveness = getEffectiveness(powers);
+			effectiveness = Math.round(effectiveness*1000.0)/1000.0;
 		    //System.out.println("tlct:");
 			    
 		    System.out.println("Overall Effectiveness: "+ effectiveness);
-		    printer.println("Oveall Effectiveness: "+effectiveness);
+		    printer.println("Overall Effectiveness: "+effectiveness);
+		    printStr+=String.format("Oveall Effectiveness: "+effectiveness+"\n");
 			
 		    System.out.println("Total Level Changing Time: "+lct_lcc[0]);
-		    printer.println("Total Level Changing Time: "+lct_lcc[0]);
+		    printer.println("Expected Running Time: "+lct_lcc[0]);
+		    printStr+=String.format("Expected Running Time: "+lct_lcc[0]+"\n");
+		    
 		    //System.out.println("tlcc:");
 		    System.out.println("Total Level Changing Cost: "+lct_lcc[1]);
-		    printer.println("Total Level Changing Cost: "+lct_lcc[1]);
+//		    printer.println("Total Level Changing Cost: "+lct_lcc[1]);
 //		    System.out.println("value:" + value);
-		    printer.printf("Value: %.4f \n", value);
+//		    printer.printf("Value: %.4f \n", value);
 		    System.out.println("--------------");
-		    printer.println("--------------");
+		    printer.println("----------------------------");
+		    printStr+=String.format("--------------------------------------------------------"+"\n");
+		    if(exact){
+		    	ps.write(i+1, effectiveness, lct_lcc[0], printStr);
+		    }
+		    
 		    
 		    writer.println(effectiveness+sep+lct_lcc[0]+sep+design);
 		    
 //		    writerS.println((i+1)+","+dValue+","+lct_lcc[0]+","+lct_lcc[1]+",\""+design+"\"");
 		}
 		writer.close();
+		ps.print();
 		//printer.println("\u03C3"); //sigma
 		//printer.println("\u03A6"+"²"); //phi
 		printer.close();
